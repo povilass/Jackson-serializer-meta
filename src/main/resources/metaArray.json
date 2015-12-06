@@ -1,0 +1,24 @@
+[{
+  "_meta_" : {
+    "number" : {
+      "type" : "BigDecimal"
+    }
+  },
+  "number" : 200
+},
+  {
+    "_meta_" : {
+      "number" : {
+        "type" : "BigDecimal"
+      }
+    },
+    "number" : 300
+  },
+  {
+    "_meta_" : {
+      "number" : {
+        "type" : "BigDecimal"
+      }
+    },
+    "number" : 300
+  }]

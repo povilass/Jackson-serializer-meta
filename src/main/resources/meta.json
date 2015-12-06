@@ -1,0 +1,42 @@
+{
+  "_meta_" : {
+    "amount" : {
+      "type" : "BigDecimal"
+    }
+  },
+  "amount" : 200,
+  "number" : 100,
+  "innerContract" : {
+    "_meta_" : {
+      "innerAmount" : {
+        "type" : "BigDecimal"
+      }
+    },
+    "innerAmount" : 200,
+    "innerNumber" : 100
+  },
+  "list" : [{
+    "_meta_" : {
+      "number" : {
+        "type" : "BigDecimal"
+      }
+    },
+    "number" : 200
+  },
+    {
+      "_meta_" : {
+        "number" : {
+          "type" : "BigDecimal"
+        }
+      },
+      "number" : 300
+    },
+    {
+      "_meta_" : {
+        "number" : {
+          "type" : "BigDecimal"
+        }
+      },
+      "number" : 300
+    }]
+}
