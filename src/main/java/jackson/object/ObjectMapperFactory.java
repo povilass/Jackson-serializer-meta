@@ -2,7 +2,6 @@ package jackson.object;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.*;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.impl.BeanAsArraySerializer;
 import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
 import com.fasterxml.jackson.databind.util.NameTransformer;
+import com.google.common.base.CaseFormat;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class ObjectMapperFactory {
 
-    public static class CustomModifier extends BeanSerializerModifier{
+    public static class CustomModifier extends BeanSerializerModifier {
 
         @Override
         public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
@@ -108,17 +108,46 @@ public class ObjectMapperFactory {
         }
 
         private void appendMeta(Object bean, JsonGenerator jgen) throws IOException {
-            Map<String, Map<String, String>> meta = new LinkedHashMap<String, Map<String, String>>();
-            for(Field field : bean.getClass().getDeclaredFields()) {
-                if(field.getDeclaredAnnotation(MetaTag.class) != null) {
-                    Map<String, String> fieldInfo = new LinkedHashMap<String, String>();
-                    fieldInfo.put("type", field.getType().getSimpleName());
-                    meta.put(field.getName(), fieldInfo);
+            Map<String, Map<String, Object>> meta = null;
+            MetaFactory metaFactory = null;
+            for (Field field : bean.getClass().getDeclaredFields()) {
+                MetaDescriptor annotation = field.getDeclaredAnnotation(MetaDescriptor.class);
+                if (annotation != null) {
+                    if(metaFactory == null) {
+                        metaFactory = new MetaFactory();
+                    }
+                    Map<String, Object> fieldInfo = metaFactory.resolveMetaDescriptor(annotation, field);
+                    if (fieldInfo != null) {
+                        if(meta == null) {
+                            meta = new LinkedHashMap<String, Map<String, Object>>();
+                        }
+
+                        meta.put(field.getName(), fieldInfo);
+                    }
                 }
             }
-            if(!meta.isEmpty()) {
+            if (meta != null) {
                 jgen.writeObjectField("_meta_", meta);
             }
+        }
+
+        private class MetaFactory {
+
+            public Map<String, Object> resolveMetaDescriptor(MetaDescriptor annotation, Field field) {
+                Map<String, Object> fieldInfo = new LinkedHashMap<String, Object>();
+                for (MetaInfo info : annotation.values()) {
+                    String camelCaseInfo = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, info.toString());
+                    switch (info) {
+                        case TYPE: {
+                            fieldInfo.put(camelCaseInfo, field.getType().getSimpleName());
+                            break;
+                        }
+                    }
+                }
+
+                return fieldInfo;
+            }
+
         }
     }
 
